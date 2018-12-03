@@ -1,13 +1,9 @@
 package main
 
 import (
-	"bufio"
-	"encoding/csv"
 	"fmt"
+	"github.com/Piszmog/advent-of-code-2018/utils"
 	"github.com/pkg/errors"
-	"io"
-	"os"
-	"path/filepath"
 	"strconv"
 )
 
@@ -36,26 +32,11 @@ func main() {
 }
 
 func readFrequencyFile(frequency int, frequencyResultMap map[int]bool) (int, int, bool) {
-	pathToFile, err := filepath.Abs(filename)
-	if err != nil {
-		panic(errors.Wrapf(err, "failed to get absolute path of %s", filename))
-	}
-	file, err := os.Open(pathToFile)
-	if err != nil {
-		panic(errors.Wrapf(err, "failed to open file %s", filename))
-	}
-	defer closeFile(file)
-	reader := csv.NewReader(bufio.NewReader(file))
-	line := 0
+	file := utils.OpenFile(filename)
+	defer utils.CloseFile(file)
 	duplicateFrequency := 0
 	duplicateFrequencyFound := false
-	for {
-		record, err := reader.Read()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			panic(errors.Wrapf(err, "failed to read line $d", line))
-		}
+	utils.ReadFile(file, func(record []string, line int) {
 		stringValue := record[0]
 		newFrequency, err := strconv.Atoi(stringValue)
 		if err != nil {
@@ -71,14 +52,6 @@ func readFrequencyFile(frequency int, frequencyResultMap map[int]bool) (int, int
 				frequencyResultMap[frequency] = false
 			}
 		}
-		line++
-	}
+	})
 	return frequency, duplicateFrequency, duplicateFrequencyFound
-}
-
-func closeFile(file *os.File) {
-	err := file.Close()
-	if err != nil {
-		panic(errors.Wrapf(err, "failed to close %s", filename))
-	}
 }
