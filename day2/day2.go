@@ -70,26 +70,7 @@ func findId(ids []string) string {
 			if primaryIndex == secondaryIndex {
 				continue
 			} else {
-				numberOfDifferences := 0
-				splitPrimary := strings.Split(primaryId, "")
-				splitSecondary := strings.Split(secondaryId, "")
-				primaryLength := len(splitPrimary)
-				secondaryLength := len(splitSecondary)
-				if primaryLength != secondaryLength {
-					panic(errors.Errorf("ids %s and %s have different lengths", primaryId, secondaryId))
-				}
-				matchingCharacters := make([]string, primaryLength)
-				for i := 0; i < primaryLength; i++ {
-					difference := strings.Compare(splitPrimary[i], splitSecondary[i])
-					if difference != 0 {
-						numberOfDifferences++
-					} else {
-						matchingCharacters[i] = splitPrimary[i]
-					}
-					if numberOfDifferences > 1 {
-						break
-					}
-				}
+				numberOfDifferences, matchingCharacters := getNumberOfDifferences(primaryId, secondaryId)
 				if numberOfDifferences == 1 {
 					return strings.Join(matchingCharacters, "")
 				}
@@ -97,4 +78,28 @@ func findId(ids []string) string {
 		}
 	}
 	return ""
+}
+
+func getNumberOfDifferences(primaryId string, secondaryId string) (int, []string) {
+	numberOfDifferences := 0
+	splitPrimary := strings.Split(primaryId, "")
+	splitSecondary := strings.Split(secondaryId, "")
+	primaryLength := len(splitPrimary)
+	secondaryLength := len(splitSecondary)
+	if primaryLength != secondaryLength {
+		panic(errors.Errorf("ids %s and %s have different lengths", primaryId, secondaryId))
+	}
+	matchingCharacters := make([]string, primaryLength)
+	for i := 0; i < primaryLength; i++ {
+		difference := strings.Compare(splitPrimary[i], splitSecondary[i])
+		if difference != 0 {
+			numberOfDifferences++
+		} else {
+			matchingCharacters[i] = splitPrimary[i]
+		}
+		if numberOfDifferences > 1 {
+			break
+		}
+	}
+	return numberOfDifferences, matchingCharacters
 }
