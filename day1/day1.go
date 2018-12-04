@@ -16,6 +16,7 @@ func main() {
 	startingFrequency := 0
 	frequencyMap[startingFrequency] = false
 	frequencyChannel := make(chan int, 100)
+	done := make(chan bool)
 	frequencyList := make([]int, 959)
 	// read file once to get the result frequency for part 1
 	go func() {
@@ -24,9 +25,11 @@ func main() {
 			frequencyList[i] = frequency
 			i++
 		}
+		done <- true
+		close(done)
 	}()
 	readFrequencyFile(frequencyChannel)
-	<-frequencyChannel
+	<-done
 	resultFrequency, duplicateFrequencyFound, duplicateFrequency := processFrequencies(startingFrequency, frequencyMap, frequencyList)
 	reprocessAttempts := 0
 	if !duplicateFrequencyFound {

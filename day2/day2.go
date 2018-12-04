@@ -6,14 +6,33 @@ import (
 	"github.com/pkg/errors"
 	"os"
 	"strings"
+	"time"
 )
 
 const filename = "day2/ids.csv"
 
 func main() {
+	defer utils.RunTime(time.Now())
 	file := utils.OpenFile(filename)
 	defer utils.CloseFile(file)
-	ids, numberOfTwoOccurrences, numberOfThreeOccurrences := readFile(file)
+	ids := make([]string, 250)
+	idChannel := make(chan string, 100)
+	numberOfTwoOccurrences := 0
+	numberOfThreeOccurrences := 0
+	done := make(chan bool)
+	go func() {
+		i := 0
+		for id := range idChannel {
+			letterOccurrences := getLetterOccurrences(id)
+			numberOfTwoOccurrences, numberOfThreeOccurrences = checkOccurrences(letterOccurrences, numberOfTwoOccurrences, numberOfThreeOccurrences)
+			ids[i] = id
+			i++
+		}
+		done <- true
+		close(done)
+	}()
+	readFile(file, idChannel)
+	<-done
 	resultId := findId(ids)
 	if len(resultId) == 0 {
 		panic(errors.New("Failed to find ids with 1 letter difference"))
@@ -22,17 +41,11 @@ func main() {
 	fmt.Printf("The id with the fabic is %s", resultId)
 }
 
-func readFile(file *os.File) ([]string, int, int) {
-	ids := make([]string, 250)
-	numberOfTwoOccurrences := 0
-	numberOfThreeOccurrences := 0
+func readFile(file *os.File, idChannel chan string) {
+	defer close(idChannel)
 	utils.ReadFile(file, func(record []string, line int) {
-		id := record[0]
-		ids[line] = id
-		letterOccurrences := getLetterOccurrences(id)
-		numberOfTwoOccurrences, numberOfThreeOccurrences = checkOccurrences(letterOccurrences, numberOfTwoOccurrences, numberOfThreeOccurrences)
+		idChannel <- record[0]
 	})
-	return ids, numberOfTwoOccurrences, numberOfThreeOccurrences
 }
 
 func getLetterOccurrences(id string) map[int32]int {
