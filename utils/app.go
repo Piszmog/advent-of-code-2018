@@ -6,5 +6,5 @@ import (
 )
 
 func RunTime(now time.Time) {
-	fmt.Printf("\nApplication took %dms to complete\n", time.Since(now))
+	fmt.Printf("\nApplication took %dns to complete\n", time.Since(now))
 }

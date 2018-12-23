@@ -24,7 +24,12 @@ func OpenFile(filename string) *os.File {
 
 // Reads the file and processes the file with the provided function
 func ReadFile(file *os.File, processLine func(record []string, line int)) {
+	ReadFileWithDelimiter(file, ',', processLine)
+}
+
+func ReadFileWithDelimiter(file *os.File, delimiter rune, processLine func(record []string, line int)) {
 	reader := csv.NewReader(bufio.NewReader(file))
+	reader.Comma = delimiter
 	line := 0
 	for {
 		record, err := reader.Read()
