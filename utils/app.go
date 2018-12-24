@@ -5,6 +5,6 @@ import (
 	"time"
 )
 
-func RunTime(now time.Time) {
+func Runtime(now time.Time) {
 	fmt.Printf("\nApplication took %dns to complete\n", time.Since(now))
 }

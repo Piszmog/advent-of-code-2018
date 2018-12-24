@@ -55,7 +55,7 @@ func (fabricClaim FabricClaim) getOverlapClaim(secondaryFabricClaim FabricClaim)
 }
 
 func main() {
-	defer utils.RunTime(time.Now())
+	defer utils.Runtime(time.Now())
 	file := utils.OpenFile(filename)
 	defer utils.CloseFile(file)
 	fabricClaims := make([]FabricClaim, 1397)
@@ -96,7 +96,7 @@ func main() {
 
 func readFile(file *os.File, lines chan []string) {
 	defer close(lines)
-	utils.ReadFileWithDelimiter(file, ' ', func(record []string, line int) {
+	utils.ReadCSVFileWithDelimiter(file, ' ', func(record []string, line int) {
 		lines <- record
 	})
 }

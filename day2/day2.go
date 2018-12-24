@@ -12,7 +12,7 @@ import (
 const filename = "day2/ids.csv"
 
 func main() {
-	defer utils.RunTime(time.Now())
+	defer utils.Runtime(time.Now())
 	file := utils.OpenFile(filename)
 	defer utils.CloseFile(file)
 	ids := make([]string, 250)
@@ -43,7 +43,7 @@ func main() {
 
 func readFile(file *os.File, idChannel chan string) {
 	defer close(idChannel)
-	utils.ReadFile(file, func(record []string, line int) {
+	utils.ReadCSVFile(file, func(record []string, line int) {
 		idChannel <- record[0]
 	})
 }

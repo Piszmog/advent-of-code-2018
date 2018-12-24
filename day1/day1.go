@@ -11,7 +11,7 @@ import (
 const filename = "day1/frequencies.csv"
 
 func main() {
-	defer utils.RunTime(time.Now())
+	defer utils.Runtime(time.Now())
 	frequencyMap := make(map[int]bool)
 	startingFrequency := 0
 	frequencyMap[startingFrequency] = false
@@ -52,7 +52,7 @@ func readFrequencyFile(frequencyChannel chan int) {
 	file := utils.OpenFile(filename)
 	defer utils.CloseFile(file)
 	defer close(frequencyChannel)
-	utils.ReadFile(file, func(record []string, line int) {
+	utils.ReadCSVFile(file, func(record []string, line int) {
 		stringValue := record[0]
 		newFrequency, err := strconv.Atoi(stringValue)
 		if err != nil {
