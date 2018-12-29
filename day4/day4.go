@@ -12,9 +12,9 @@ import (
 const filename = "day4/guardSchedule.txt"
 
 type Guard struct {
-	id            int
-	timeAsleep    []time.Duration
-	minutesAsleep []MinuteRange
+	id                 int
+	totalMinutesAsleep int
+	minutesAsleep      []MinuteRange
 }
 
 type MinuteRange struct {
@@ -57,7 +57,7 @@ func mapSchedule(lines chan string, done chan bool) {
 	})
 	guardId := 0
 	guards := make(map[int]Guard)
-	var timeAsleep []time.Duration
+	var timeAsleep int
 	var minuteRange []MinuteRange
 	var sleepTime time.Time
 	for _, schedule := range schedules {
@@ -65,17 +65,17 @@ func mapSchedule(lines chan string, done chan bool) {
 			if guardId != 0 {
 				guard := guards[guardId]
 				if guard.id != 0 {
-					guard.timeAsleep = append(guard.timeAsleep, timeAsleep...)
+					guard.totalMinutesAsleep = guard.totalMinutesAsleep + timeAsleep
 					guard.minutesAsleep = append(guard.minutesAsleep, minuteRange...)
 				} else {
 					guard = Guard{
-						id:            guardId,
-						timeAsleep:    timeAsleep,
-						minutesAsleep: minuteRange,
+						id:                 guardId,
+						totalMinutesAsleep: timeAsleep,
+						minutesAsleep:      minuteRange,
 					}
 				}
 				guards[guardId] = guard
-				timeAsleep = timeAsleep[:0]
+				timeAsleep = 0
 				minuteRange = minuteRange[:0]
 			}
 			num, err := fmt.Sscanf(schedule.text, " Guard #%d begins shift", &guardId)
@@ -93,41 +93,35 @@ func mapSchedule(lines chan string, done chan bool) {
 				start: sleepTime.Minute(),
 				end:   wakeUpTime.Minute(),
 			})
-			asleepDuration := wakeUpTime.Sub(sleepTime)
-			timeAsleep = append(timeAsleep, asleepDuration)
+			asleepMinutes := wakeUpTime.Minute() - sleepTime.Minute()
+			timeAsleep = timeAsleep + asleepMinutes
 		}
 	}
-	var longestTotalAsleep time.Duration
-	var longestAsleepGuard int
+	guardAsleepLongest := 0
+	timeAsleepLongest := 0
 	for id, guard := range guards {
-		var totalTimeAsleep time.Duration
-		var longestAsleepDuration time.Duration
-		for _, asleepDuration := range guard.timeAsleep {
-			if longestAsleepDuration < asleepDuration {
-				longestAsleepDuration = asleepDuration
-			}
-			totalTimeAsleep = totalTimeAsleep + asleepDuration
-		}
-		if longestTotalAsleep < totalTimeAsleep {
-			longestTotalAsleep = totalTimeAsleep
-			longestAsleepGuard = id
+		if timeAsleepLongest < guard.totalMinutesAsleep {
+			guardAsleepLongest = id
+			timeAsleepLongest = guard.totalMinutesAsleep
 		}
 	}
-	guard := guards[longestAsleepGuard]
-	minuteAsleepOccurrences := make(map[int]int)
+	guard := guards[guardAsleepLongest]
+	minuteAsleepTimes := make(map[int]int)
 	for _, minuteRange := range guard.minutesAsleep {
-		for i := minuteRange.start; i <= minuteRange.end; i++ {
-			minuteAsleepOccurrences[i]++
+		start := minuteRange.start
+		end := minuteRange.end
+		for i := start; i <= end; i++ {
+			minuteAsleepTimes[start]++
 		}
 	}
-	var minuteMostAsleep int
-	var mostTimeAsleep int
-	for minute, numberOfTimes := range minuteAsleepOccurrences {
-		if mostTimeAsleep < numberOfTimes {
+	minuteMostAsleep := 0
+	mostNumberOfTimesAsleep := 0
+	for minute, numberOfTimesAsleep := range minuteAsleepTimes {
+		if mostNumberOfTimesAsleep < numberOfTimesAsleep {
+			mostNumberOfTimesAsleep = numberOfTimesAsleep
 			minuteMostAsleep = minute
-			mostTimeAsleep = numberOfTimes
 		}
 	}
-	fmt.Printf("Guard %d slept the longest for %d minutes\n", longestAsleepGuard, minuteMostAsleep)
+	fmt.Printf("Guard %d slept the longest for %d minutes. Minute most asleep is %d\n", guardAsleepLongest, timeAsleepLongest, minuteMostAsleep)
 	close(done)
 }
